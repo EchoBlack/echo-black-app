@@ -116,12 +116,16 @@ Build the strongest usable Echo Black content pack for this request.`;
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1800,
-        system: `${BASE_SYSTEM}\n\n${MODE_PROMPTS[mode]}`,
-        messages: [{ role: "user", content: userPrompt }]
-      })
-    });
+  model: "claude-3-5-sonnet-20241022",
+  max_tokens: 1500,
+  system: BASE_SYSTEM,
+  messages: [
+    {
+      role: "user",
+      content: userPrompt
+    }
+  ]
+})
 
     const data = await response.json();
 
