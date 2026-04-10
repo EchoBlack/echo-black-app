@@ -7,7 +7,10 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "1mb" }));
-app.use(express.static("public"));
+app.get("/", (req, res) => {
+  res.sendFile("index 2.html", { root: "." });
+});
+app.use(express.static("."));
 
 const SECTIONS = ["HOOK", "REVEAL", "WEIGHT", "INVITATION"];
 
