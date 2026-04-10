@@ -10,7 +10,7 @@ const port = process.env.PORT || 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const publicDir = path.join(__dirname, "public");
+const publicDir = __dirname;
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(publicDir));
