@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Echo Black — One Click</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --void:#0a0c07; --deep:#111408; --surface:#161a0d; --olive:#2a3018; --olive-mid:#3d4a20;
+  --gold:#c9a84c; --gold-bright:#e8c85a; --gold-dim:#8a6e2a; --text-primary:#e8dfc0;
+  --text-secondary:#a09470; --text-dim:#5a5238;
+}
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html, body { min-height:100%; background:var(--void); color:var(--text-primary); font-family:'EB Garamond', Georgia, serif; }
+body { padding:20px 16px 40px; }
+.wrap { max-width:920px; margin:0 auto; }
+.title {
+  font-family:'Cinzel', serif; font-size:clamp(30px, 7vw, 48px); font-weight:900;
+  color:var(--gold-bright); letter-spacing:.08em; text-transform:uppercase; line-height:1.05;
+}
+.sub {
+  margin-top:8px; color:var(--text-dim); font-family:'Cinzel', serif;
+  font-size:10px; letter-spacing:.35em; text-transform:uppercase;
+}
+.card {
+  margin-top:22px; background:linear-gradient(135deg, var(--deep), var(--surface));
+  border:1px solid var(--olive-mid); padding:18px;
+}
+.label {
+  font-family:'Cinzel', serif; font-size:9px; letter-spacing:.38em;
+  text-transform:uppercase; color:var(--text-dim); margin-bottom:10px;
+}
+input, select, textarea {
+  width:100%; background:var(--deep); border:1px solid var(--olive-mid); color:var(--text-primary);
+  padding:14px 15px; font-size:16px; font-family:'EB Garamond', serif; border-radius:0; outline:none;
+}
+.grid { display:grid; grid-template-columns:1fr; gap:12px; }
+@media(min-width:720px){ .grid.two { grid-template-columns:1.2fr .8fr; } }
+.btn-gold, .btn-ghost {
+  border:none; cursor:pointer; padding:15px 16px; border-radius:0; font-family:'Cinzel', serif; text-transform:uppercase;
+}
+.btn-gold {
+  background:linear-gradient(135deg, var(--gold), var(--gold-dim)); color:#0a0c07;
+  letter-spacing:.26em; font-size:10px; font-weight:700;
+}
+.btn-ghost {
+  background:transparent; color:var(--gold); border:1px solid var(--olive-mid); letter-spacing:.2em; font-size:10px;
+}
+.btn-gold:disabled, .btn-ghost:disabled { opacity:.55; cursor:not-allowed; }
+.mode-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+.mode { border:1px solid var(--olive); padding:14px; cursor:pointer; background:var(--deep); }
+.mode.active { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+.mode-title { font-family:'Cinzel', serif; color:var(--gold-bright); font-size:13px; letter-spacing:.18em; text-transform:uppercase; }
+.mode-copy { margin-top:6px; color:var(--text-secondary); font-size:15px; line-height:1.5; }
+.status { margin-top:16px; color:var(--text-dim); font-style:italic; min-height:24px; }
+.error { color:#d89b86; }
+.result { display:none; margin-top:22px; }
+.panel { border:1px solid var(--olive); background:var(--deep); padding:16px; margin-top:12px; }
+.panel h3 {
+  font-family:'Cinzel', serif; color:var(--gold); font-size:10px; letter-spacing:.35em; text-transform:uppercase; margin-bottom:10px;
+}
+.panel p, .panel li, .panel pre { color:var(--text-primary); font-size:18px; line-height:1.7; }
+.panel ul { padding-left:20px; }
+.panel pre { white-space:pre-wrap; word-break:break-word; font-family:'EB Garamond', serif; }
+.copy-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+.small { font-size:13px; color:var(--text-dim); line-height:1.6; margin-top:8px; }
+.hr { display:flex; align-items:center; gap:10px; margin:18px 0 8px; }
+.hr-line { flex:1; height:1px; background:var(--olive); }
+.hr-gem { width:5px; height:5px; background:var(--gold-dim); transform:rotate(45deg); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">Echo Black</div>
+  <div class="sub">One Click Content System</div>
+
+  <div class="card">
+    <div class="label">Mode</div>
+    <div class="mode-grid">
+      <div class="mode active" data-mode="episode_pack">
+        <div class="mode-title">Episode Pack</div>
+        <div class="mode-copy">3 titles, 5 hooks, full script, shorts version, thumbnail text, description, and tags.</div>
+      </div>
+      <div class="mode" data-mode="shorts_pack">
+        <div class="mode-title">Shorts Pack</div>
+        <div class="mode-copy">Fast short-form angles, hooks, short script, caption, and tags.</div>
+      </div>
+      <div class="mode" data-mode="hook_storm">
+        <div class="mode-title">Hook Storm</div>
+        <div class="mode-copy">A fast batch of hook ideas when you just need angles.</div>
+      </div>
+    </div>
+
+    <div class="hr"><div class="hr-line"></div><div class="hr-gem"></div><div class="hr-line"></div></div>
+
+    <div class="grid two">
+      <div>
+        <div class="label">Topic</div>
+        <input id="topic" type="text" placeholder="Example: Hart Island, civil asset forfeiture, missing floors in skyscrapers..." />
+      </div>
+      <div>
+        <div class="label">Preset Tone</div>
+        <select id="tone">
+          <option value="hidden history">Hidden History</option>
+          <option value="buried systems">Buried Systems</option>
+          <option value="psychological manipulation">Psychological Manipulation</option>
+          <option value="invisible infrastructure">Invisible Infrastructure</option>
+          <option value="custom">Custom / raw</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <div class="label">Optional Notes</div>
+      <textarea id="notes" rows="4" placeholder="Optional: angle, desired feeling, facts to include, audience, etc."></textarea>
+    </div>
+
+    <div class="copy-row">
+      <button class="btn-gold" id="generateBtn">Generate Pack</button>
+      <button class="btn-ghost" id="copyAllBtn" disabled>Copy All</button>
+      <button class="btn-ghost" id="downloadBtn" disabled>Download Text</button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="small">One tap should give you the whole usable content pack, not just a script fragment.</div>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+const modeEls = document.querySelectorAll('.mode');
+const topicEl = document.getElementById('topic');
+const toneEl = document.getElementById('tone');
+const notesEl = document.getElementById('notes');
+const generateBtn = document.getElementById('generateBtn');
+const copyAllBtn = document.getElementById('copyAllBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const resultEl = document.getElementById('result');
+const statusEl = document.getElementById('status');
+
+let selectedMode = 'episode_pack';
+let lastText = '';
+
+modeEls.forEach(el => {
+  el.addEventListener('click', () => {
+    modeEls.forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    selectedMode = el.dataset.mode;
+  });
+});
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function sectionHtml(title, content, isList=false) {
+  if (!content) return '';
+  if (isList && Array.isArray(content)) {
+    return `<div class="panel"><h3>${escapeHtml(title)}</h3><ul>${content.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`;
+  }
+  return `<div class="panel"><h3>${escapeHtml(title)}</h3><pre>${escapeHtml(content)}</pre></div>`;
+}
+
+function renderPayload(data) {
+  const p = data.payload || {};
+  let html = '';
+  html += sectionHtml('Titles', p.titles, true);
+  html += sectionHtml('Hooks', p.hooks, true);
+  html += sectionHtml('Full Script', p.full_script);
+  html += sectionHtml('Shorts Script', p.shorts_script);
+  html += sectionHtml('Thumbnail Text', p.thumbnail_text, true);
+  html += sectionHtml('Description', p.description);
+  html += sectionHtml('Tags', p.tags, true);
+  html += sectionHtml('Short Angles', p.short_angles, true);
+  html += sectionHtml('Caption', p.caption);
+  html += sectionHtml('Hook Storm', p.hook_storm, true);
+  resultEl.innerHTML = html;
+  resultEl.style.display = 'block';
+}
+
+function payloadToText(data) {
+  const p = data.payload || {};
+  const parts = [];
+  const pushList = (label, arr) => {
+    if (!arr || !arr.length) return;
+    parts.push(label.toUpperCase());
+    arr.forEach((item, i) => parts.push(`${i+1}. ${item}`));
+    parts.push('');
+  };
+  const pushText = (label, text) => {
+    if (!text) return;
+    parts.push(label.toUpperCase());
+    parts.push(text);
+    parts.push('');
+  };
+  pushList('Titles', p.titles);
+  pushList('Hooks', p.hooks);
+  pushText('Full Script', p.full_script);
+  pushText('Shorts Script', p.shorts_script);
+  pushList('Thumbnail Text', p.thumbnail_text);
+  pushText('Description', p.description);
+  pushList('Tags', p.tags);
+  pushList('Short Angles', p.short_angles);
+  pushText('Caption', p.caption);
+  pushList('Hook Storm', p.hook_storm);
+  return parts.join('\n');
+}
+
+generateBtn.addEventListener('click', async () => {
+  const topic = topicEl.value.trim();
+  const tone = toneEl.value.trim();
+  const notes = notesEl.value.trim();
+
+  if (!topic) {
+    statusEl.textContent = 'Enter a topic first.';
+    statusEl.className = 'status error';
+    return;
+  }
+
+  generateBtn.disabled = true;
+  copyAllBtn.disabled = true;
+  downloadBtn.disabled = true;
+  resultEl.style.display = 'none';
+  statusEl.textContent = 'Generating your pack...';
+  statusEl.className = 'status';
+
+  try {
+    const response = await fetch('/api/generate-pack', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: selectedMode, topic, tone, notes })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Request failed.');
+
+    renderPayload(data);
+    lastText = payloadToText(data);
+    copyAllBtn.disabled = false;
+    downloadBtn.disabled = false;
+    statusEl.textContent = 'Pack generated.';
+    statusEl.className = 'status';
+  } catch (err) {
+    statusEl.textContent = err.message || 'Something broke.';
+    statusEl.className = 'status error';
+  } finally {
+    generateBtn.disabled = false;
+  }
+});
+
+copyAllBtn.addEventListener('click', async () => {
+  if (!lastText) return;
+  try {
+    await navigator.clipboard.writeText(lastText);
+    statusEl.textContent = 'Copied to clipboard.';
+    statusEl.className = 'status';
+  } catch {
+    statusEl.textContent = 'Clipboard copy failed.';
+    statusEl.className = 'status error';
+  }
+});
+
+downloadBtn.addEventListener('click', () => {
+  if (!lastText) return;
+  const blob = new Blob([lastText], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeTopic = (topicEl.value || 'echo-black-pack').replace(/[^\w\-]+/g, '-').toLowerCase();
+  a.href = url;
+  a.download = `${safeTopic}-${selectedMode}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>

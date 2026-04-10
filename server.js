@@ -1,63 +1,111 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicDir = path.join(__dirname, "public");
+
 app.use(express.json({ limit: "1mb" }));
+app.use(express.static(publicDir));
+
 app.get("/", (req, res) => {
-  res.sendFile("index 2.html", { root: "." });
+  res.sendFile(path.join(publicDir, "index.html"));
 });
-app.use(express.static("."));
 
-const SECTIONS = ["HOOK", "REVEAL", "WEIGHT", "INVITATION"];
+const BASE_SYSTEM = `You are Umbra Locke, the narrator of Echo Black.
+Your voice is measured, deliberate, intimate, and vivid.
+You are mysterious without becoming confusing. You are cinematic without becoming bloated.
+You reveal strange but real patterns, systems, histories, and structures hidden in plain sight.
+Write with authority. Avoid filler. Keep it usable for actual video production.`;
 
-const SYSTEM_PROMPT = `You are Umbra Locke — the narrator of Echo Black, a channel dedicated to revealing things hidden in plain sight. Things people walk past every day without ever questioning. Your purpose is to crack the world open and make people see it differently — forever.
-
-Your voice is:
-- Measured, unhurried, and deliberate — every word chosen with intent
-- Deeply knowledgeable but never academic or dry
-- Mystical but grounded in real, verifiable fact
-- You carry the weight of someone who has seen behind the curtain and cannot unsee it
-- You speak directly to the viewer — intimate, conspiratorial, like you're letting them in on something
-- You never sensationalize. The facts are strange enough. You just illuminate them.
-
-Format your response with these exact section headers on their own lines:
-[HOOK]
-[REVEAL]
-[WEIGHT]
-[INVITATION]
-
-Each section should flow naturally. HOOK: 2-3 sentences, drop viewer into strangeness immediately. REVEAL: 3-4 paragraphs, slowly unpack the truth. WEIGHT: 1-2 paragraphs, why this matters. INVITATION: 1 paragraph, ignite curiosity without giving everything away.
-
-Write for Echo Black. Make them feel the world shift beneath their feet.`;
-
-function parseEpisode(text) {
-  const result = {};
-  SECTIONS.forEach((section, i) => {
-    const tag = `[${section}]`;
-    const nextTag = SECTIONS[i + 1] ? `[${SECTIONS[i + 1]}]` : null;
-    const start = text.indexOf(tag);
-    if (start === -1) return;
-    const contentStart = start + tag.length;
-    const end = nextTag ? text.indexOf(nextTag) : text.length;
-    result[section] = text.slice(contentStart, end !== -1 ? end : undefined).trim();
-  });
-  return result;
+const MODE_PROMPTS = {
+  episode_pack: `Return valid JSON only with this exact shape:
+{
+  "titles": ["", "", ""],
+  "hooks": ["", "", "", "", ""],
+  "full_script": "",
+  "shorts_script": "",
+  "thumbnail_text": ["", "", ""],
+  "description": "",
+  "tags": ["", "", "", "", "", "", "", "", "", ""]
 }
 
-app.post("/api/generate", async (req, res) => {
-  const topic = String(req.body?.topic || "").trim();
+Rules:
+- titles: 3 strong clickable titles
+- hooks: 5 varied opening hooks
+- full_script: 500-900 words, structured for a narrated Echo Black episode
+- shorts_script: 90-160 words
+- thumbnail_text: 3 short punchy options, 2-6 words each
+- description: 1 YouTube description paragraph
+- tags: 10 concise keyword tags
+- No markdown
+- No commentary outside JSON`,
 
-  if (!topic) {
-    return res.status(400).json({ error: "Topic is required." });
+  shorts_pack: `Return valid JSON only with this exact shape:
+{
+  "hooks": ["", "", "", "", ""],
+  "short_angles": ["", "", "", ""],
+  "shorts_script": "",
+  "caption": "",
+  "tags": ["", "", "", "", "", "", "", "", "", ""]
+}
+
+Rules:
+- hooks: 5 sharp short-form hooks
+- short_angles: 4 framing angles for different short videos
+- shorts_script: 80-140 words
+- caption: 1 social caption
+- tags: 10 concise keyword tags
+- No markdown
+- No commentary outside JSON`,
+
+  hook_storm: `Return valid JSON only with this exact shape:
+{
+  "hook_storm": ["", "", "", "", "", "", "", "", "", "", "", ""]
+}
+
+Rules:
+- hook_storm: 12 distinct hooks
+- Make them varied: curiosity, dread, contradiction, hidden system, overlooked place, social manipulation, buried history
+- Each one should feel usable as a real opening line
+- No markdown
+- No commentary outside JSON`
+};
+
+function extractJson(text) {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error("Model response did not contain valid JSON.");
   }
+  return JSON.parse(text.slice(start, end + 1));
+}
 
+app.post("/api/generate-pack", async (req, res) => {
+  const mode = String(req.body?.mode || "episode_pack").trim();
+  const topic = String(req.body?.topic || "").trim();
+  const tone = String(req.body?.tone || "").trim();
+  const notes = String(req.body?.notes || "").trim();
+
+  if (!topic) return res.status(400).json({ error: "Topic is required." });
+  if (!MODE_PROMPTS[mode]) return res.status(400).json({ error: "Invalid mode." });
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(500).json({ error: "Missing ANTHROPIC_API_KEY in your environment." });
   }
+
+  const userPrompt = `Mode: ${mode}
+Topic: ${topic}
+Tone preset: ${tone || "none"}
+Optional notes: ${notes || "none"}
+
+Build the strongest usable Echo Black content pack for this request.`;
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -69,11 +117,9 @@ app.post("/api/generate", async (req, res) => {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1200,
-        system: SYSTEM_PROMPT,
-        messages: [
-          { role: "user", content: `Generate an Echo Black episode about: ${topic}` }
-        ]
+        max_tokens: 1800,
+        system: `${BASE_SYSTEM}\n\n${MODE_PROMPTS[mode]}`,
+        messages: [{ role: "user", content: userPrompt }]
       })
     });
 
@@ -88,14 +134,19 @@ app.post("/api/generate", async (req, res) => {
       ? data.content.filter(part => part.type === "text").map(part => part.text).join("\n")
       : "";
 
-    const episode = parseEpisode(text);
+    let payload;
+    try {
+      payload = extractJson(text);
+    } catch {
+      return res.status(500).json({ error: "The model response was not valid JSON. Try again." });
+    }
 
-    return res.json({ topic, text, episode });
+    return res.json({ mode, topic, payload });
   } catch (error) {
     return res.status(500).json({ error: error?.message || "Unexpected server error." });
   }
 });
 
 app.listen(port, () => {
-  console.log(`Echo Black running on http://localhost:${port}`);
+  console.log(`Echo Black One Click running on http://localhost:${port}`);
 });
