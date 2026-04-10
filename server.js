@@ -1,20 +1,13 @@
 import express from "express";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 app.use(express.json({ limit: "1mb" }));
-
-const publicDir = path.join(__dirname, "public");
-app.use(express.static(publicDir));
+app.use(express.static("public"));
 
 const SECTIONS = ["HOOK", "REVEAL", "WEIGHT", "INVITATION"];
 
@@ -51,10 +44,6 @@ function parseEpisode(text) {
   });
   return result;
 }
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(publicDir, "index.html"));
-});
 
 app.post("/api/generate", async (req, res) => {
   const topic = String(req.body?.topic || "").trim();

@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="apple-mobile-web-app-title" content="Echo Black" />
+<meta name="theme-color" content="#0a0c07" />
+<title>Echo Black</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --void: #0a0c07;
+  --deep: #111408;
+  --surface: #161a0d;
+  --olive: #2a3018;
+  --olive-mid: #3d4a20;
+  --gold: #c9a84c;
+  --gold-bright: #e8c85a;
+  --gold-dim: #8a6e2a;
+  --text-primary: #e8dfc0;
+  --text-secondary: #a09470;
+  --text-dim: #5a5238;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  height: 100%; overflow: hidden;
+  background: var(--void); color: var(--text-primary);
+  font-family: 'EB Garamond', Georgia, serif;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes glow-pulse { 0%,100% { text-shadow:0 0 20px #c9a84c44; } 50% { text-shadow:0 0 40px #c9a84c88; } }
+@keyframes flicker { 0%,89%,91%,93%,100% { opacity:1; } 90%,92% { opacity:0.6; } }
+@keyframes halo-pulse { 0%,100% { opacity:0.5; } 50% { opacity:1; } }
+
+#app { display:flex; flex-direction:column; height:100vh; padding-top:var(--safe-top); padding-bottom:var(--safe-bottom); }
+#nav { display:flex; background:var(--deep); border-top:1px solid var(--olive); padding:0 0 var(--safe-bottom); flex-shrink:0; order:2; }
+.nav-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:10px 4px 8px; border:none; background:transparent; color:var(--text-dim);
+  cursor:pointer; transition:color .2s; gap:4px; font-family:'Cinzel', serif;
+  font-size:7px; letter-spacing:.15em; text-transform:uppercase;
+}
+.nav-btn.active { color:var(--gold); }
+.nav-btn svg { width:20px; height:20px; flex-shrink:0; }
+#screens { flex:1; overflow:hidden; order:1; position:relative; }
+.screen {
+  position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; display:none;
+  padding:28px 20px 32px; -webkit-overflow-scrolling:touch;
+}
+.screen.active { display:block; animation:fadeIn .3s ease; }
+
+.screen-title {
+  font-family:'Cinzel', serif; font-size:clamp(22px, 6vw, 32px); font-weight:900;
+  color:var(--gold-bright); letter-spacing:.1em; text-transform:uppercase;
+  animation:glow-pulse 6s infinite, flicker 14s infinite; line-height:1.1;
+}
+.screen-sub {
+  font-family:'Cinzel', serif; font-size:8px; letter-spacing:.45em;
+  color:var(--text-dim); margin-top:6px; text-transform:uppercase;
+}
+.divider { display:flex; align-items:center; gap:10px; margin:16px 0; }
+.divider-line { flex:1; height:1px; background:var(--olive); }
+.divider-gem { width:5px; height:5px; background:var(--gold-dim); transform:rotate(45deg); flex-shrink:0; }
+.label {
+  font-family:'Cinzel', serif; font-size:8px; letter-spacing:.45em; color:var(--text-dim);
+  text-transform:uppercase; margin-bottom:10px;
+}
+input, textarea {
+  width:100%; background:var(--deep); border:1px solid var(--olive-mid);
+  color:var(--text-primary); font-family:'EB Garamond', serif; font-style:italic;
+  font-size:16px; padding:14px 16px; outline:none; transition:border-color .3s, box-shadow .3s;
+  -webkit-appearance:none; border-radius:0;
+}
+input:focus, textarea:focus { border-color:var(--gold); box-shadow:0 0 20px rgba(201,168,76,0.12); }
+.btn-gold {
+  width:100%; background:linear-gradient(135deg, var(--gold), var(--gold-dim)); border:none;
+  color:var(--void); font-family:'Cinzel', serif; font-size:10px; font-weight:600;
+  letter-spacing:.4em; text-transform:uppercase; padding:16px; cursor:pointer;
+  transition:all .3s; -webkit-appearance:none; border-radius:0;
+}
+.btn-gold:active { opacity:.8; transform:scale(.99); }
+.btn-gold:disabled { background:var(--olive); color:var(--text-dim); }
+.btn-ghost {
+  background:transparent; border:1px solid var(--olive-mid); color:var(--text-dim);
+  font-family:'Cinzel', serif; font-size:8px; letter-spacing:.35em; text-transform:uppercase;
+  padding:10px 20px; cursor:pointer; transition:all .2s; -webkit-appearance:none; border-radius:0;
+}
+.btn-ghost:active { border-color:var(--gold); color:var(--gold); }
+
+.halo-wrap { position:relative; width:80px; height:80px; margin:0 auto; }
+.halo-svg { animation:halo-pulse 4s ease-in-out infinite; }
+.halo-face {
+  position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+  width:44px; height:44px; border-radius:50%; background:radial-gradient(ellipse at 40% 35%, #1a1e10, #0a0c07);
+  border:1px solid var(--olive); display:flex; align-items:center; justify-content:center;
+  color:var(--gold); font-size:14px;
+}
+.ep-header {
+  border:1px solid var(--olive-mid); background:linear-gradient(135deg, var(--deep), var(--surface));
+  padding:20px; margin-bottom:28px; position:relative;
+}
+.ep-header::before, .ep-header::after, .ep-header .corner-bl, .ep-header .corner-br {
+  content:''; position:absolute; width:10px; height:10px;
+}
+.ep-header::before { top:-1px; left:-1px; border-top:2px solid var(--gold); border-left:2px solid var(--gold); }
+.ep-header::after  { top:-1px; right:-1px; border-top:2px solid var(--gold); border-right:2px solid var(--gold); }
+.ep-header .corner-bl { bottom:-1px; left:-1px; border-bottom:2px solid var(--gold); border-left:2px solid var(--gold); }
+.ep-header .corner-br { bottom:-1px; right:-1px; border-bottom:2px solid var(--gold); border-right:2px solid var(--gold); }
+.ep-header-label { font-family:'Cinzel',serif; font-size:8px; letter-spacing:.4em; color:var(--gold-dim); margin-bottom:8px; text-transform:uppercase; }
+.ep-header-topic { font-family:'EB Garamond',serif; font-size:22px; color:var(--gold-bright); font-style:italic; }
+.section-block { margin-bottom:36px; animation:fadeUp .5s ease both; }
+.section-label { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.section-label-text { font-family:'Cinzel',serif; font-size:8px; letter-spacing:.45em; color:var(--gold); text-transform:uppercase; white-space:nowrap; }
+.section-label-line { flex:1; height:1px; background:linear-gradient(90deg, rgba(201,168,76,0.4), transparent); }
+.section-body { border-left:2px solid rgba(201,168,76,0.25); padding-left:18px; }
+.section-body p { font-size:16px; line-height:1.85; color:#c8bfa8; margin-bottom:12px; }
+.section-body.hook-body { background:linear-gradient(90deg, rgba(201,168,76,0.06), transparent); }
+.section-body.hook-body p { font-size:18px; color:var(--text-primary); }
+.section-body.invite-body p { font-style:italic; color:var(--text-secondary); }
+.loading-wrap { text-align:center; padding:48px 0; }
+.loading-ring {
+  width:40px; height:40px; margin:0 auto 16px; border:1px solid var(--olive-mid);
+  border-top:1px solid var(--gold); border-radius:50%; animation:spin 1.5s linear infinite;
+}
+@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+.loading-text { font-family:'Cinzel',serif; font-size:8px; letter-spacing:.5em; color:var(--gold-dim); text-transform:uppercase; animation:flicker 2s infinite; }
+
+.vault-input-row { display:flex; gap:8px; margin-bottom:20px; }
+.vault-input-row input { flex:1; }
+.vault-add-btn {
+  background:var(--olive-mid); border:1px solid var(--gold-dim); color:var(--gold);
+  font-size:22px; width:52px; flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  -webkit-appearance:none; border-radius:0;
+}
+.vault-add-btn:active { opacity:.7; }
+.tag-filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.tag-chip {
+  font-family:'Cinzel',serif; font-size:7px; letter-spacing:.25em; border:1px solid var(--olive);
+  color:var(--text-dim); padding:5px 10px; cursor:pointer; text-transform:uppercase; background:transparent;
+  border-radius:0; -webkit-appearance:none; transition:all .2s;
+}
+.tag-chip.active { border-color:var(--gold-dim); color:var(--gold); background:rgba(201,168,76,0.06); }
+.vault-item {
+  border:1px solid var(--olive); background:var(--deep); padding:14px 16px; margin-bottom:10px;
+  display:flex; align-items:flex-start; gap:12px; animation:fadeUp .3s ease both; cursor:pointer; transition:border-color .2s;
+}
+.vault-item:active { border-color:var(--gold-dim); }
+.vault-item-gem { color:var(--gold-dim); font-size:10px; margin-top:4px; flex-shrink:0; }
+.vault-item-body { flex:1; min-width:0; }
+.vault-item-topic { font-size:17px; color:var(--text-primary); margin-bottom:4px; }
+.vault-item-tag { font-family:'Cinzel',serif; font-size:7px; letter-spacing:.3em; color:var(--gold-dim); text-transform:uppercase; }
+.vault-item-del { color:var(--text-dim); font-size:18px; padding:4px; cursor:pointer; flex-shrink:0; line-height:1; background:none; border:none; }
+.vault-item-del:active { color:#c0392b; }
+.empty-state { text-align:center; padding:52px 0; }
+.empty-state p { font-family:'EB Garamond',serif; font-style:italic; font-size:16px; color:var(--text-dim); line-height:2; }
+.archive-item {
+  border:1px solid var(--olive); background:var(--deep); padding:16px; margin-bottom:10px; cursor:pointer;
+  animation:fadeUp .3s ease both; transition:border-color .2s;
+}
+.archive-item:active { border-color:var(--gold-dim); }
+.archive-item-topic { font-size:18px; font-style:italic; color:var(--text-primary); margin-bottom:6px; }
+.archive-item-meta { font-family:'Cinzel',serif; font-size:7px; letter-spacing:.3em; color:var(--text-dim); text-transform:uppercase; }
+.archive-item-preview { font-size:13px; color:var(--text-dim); margin-top:8px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.archive-detail { display:none; }
+.archive-detail.open { display:block; animation:fadeUp .4s ease both; }
+.back-btn {
+  display:flex; align-items:center; gap:8px; background:transparent; border:none; color:var(--gold-dim);
+  font-family:'Cinzel',serif; font-size:8px; letter-spacing:.35em; text-transform:uppercase; cursor:pointer; padding:0 0 20px;
+}
+.back-btn svg { width:16px; height:16px; }
+.intro-section { border:1px solid var(--olive); background:var(--deep); padding:20px; margin-bottom:16px; }
+.intro-section-title { font-family:'Cinzel',serif; font-size:9px; letter-spacing:.4em; color:var(--gold-dim); text-transform:uppercase; margin-bottom:12px; }
+.intro-text { font-size:16px; line-height:1.9; color:var(--text-secondary); font-style:italic; }
+.intro-line { font-size:16px; line-height:2; color:var(--text-primary); margin-bottom:6px; }
+.intro-beat { font-family:'Cinzel',serif; font-size:8px; letter-spacing:.4em; color:var(--text-dim); text-transform:uppercase; margin:10px 0; }
+.intro-note { font-size:14px; color:var(--text-dim); line-height:1.8; margin-bottom:8px; }
+.tagline-item { font-size:16px; font-style:italic; color:var(--text-secondary); padding:10px 0; border-bottom:1px solid var(--olive); }
+.tagline-item:last-child { border-bottom:none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="screens">
+    <div class="screen active" id="screen-generate">
+      <div style="text-align:center; margin-bottom:28px;">
+        <div class="halo-wrap" style="margin-bottom:16px;">
+          <svg class="halo-svg" width="80" height="80" viewBox="0 0 80 80">
+            <defs>
+              <radialGradient id="hg" cx="50%" cy="50%" r="50%">
+                <stop offset="80%" stop-color="#c9a84c" stop-opacity="0"/>
+                <stop offset="93%" stop-color="#c9a84c" stop-opacity="0.7"/>
+                <stop offset="100%" stop-color="#c9a84c" stop-opacity="0.2"/>
+              </radialGradient>
+            </defs>
+            <circle cx="40" cy="40" r="36" fill="none" stroke="url(#hg)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <circle cx="40" cy="40" r="32" fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.25"/>
+          </svg>
+          <div class="halo-face">⬧</div>
+        </div>
+        <div class="screen-title">Echo<br/>Black</div>
+        <div class="screen-sub">Narrated by Umbra Locke</div>
+        <div class="divider" style="margin:14px auto; max-width:160px;">
+          <div class="divider-line"></div><div class="divider-gem"></div><div class="divider-line"></div>
+        </div>
+      </div>
+
+      <div class="label">◈ Subject of Illumination</div>
+      <div style="display:flex; gap:0; margin-bottom:8px;">
+        <input type="text" id="gen-input" placeholder="Enter a subject..." style="flex:1; border-right:none;" />
+        <button class="btn-gold" id="gen-btn" style="width:auto; padding:14px 18px; font-size:9px; letter-spacing:0.3em;">Illuminate</button>
+      </div>
+      <button class="btn-ghost" id="vault-pick-btn" style="width:100%; margin-bottom:24px; padding:12px;">◈ &nbsp; Pick from Topic Vault</button>
+
+      <div id="gen-loading" style="display:none;">
+        <div class="loading-wrap"><div class="loading-ring"></div><div class="loading-text">Umbra Locke is Speaking</div></div>
+      </div>
+
+      <div id="gen-error" style="display:none; text-align:center; margin-bottom:20px;">
+        <p style="font-style:italic; color:var(--gold-dim); font-size:15px;"></p>
+      </div>
+
+      <div id="gen-output" style="display:none;"></div>
+    </div>
+
+    <div class="screen" id="screen-vault">
+      <div class="screen-title" style="margin-bottom:4px;">Topic Vault</div>
+      <div class="screen-sub" style="margin-bottom:20px;">Hidden subjects awaiting illumination</div>
+      <div class="divider"><div class="divider-line"></div><div class="divider-gem"></div><div class="divider-line"></div></div>
+
+      <div class="label" style="margin-top:16px;">◈ Add New Topic</div>
+      <div class="vault-input-row">
+        <input type="text" id="vault-input" placeholder="Topic name..." />
+        <button class="vault-add-btn" id="vault-add-btn">+</button>
+      </div>
+
+      <div class="label">◈ Filter by Category</div>
+      <div class="tag-filters" id="tag-filters">
+        <button class="tag-chip active" data-tag="all">All</button>
+        <button class="tag-chip" data-tag="Places">Places</button>
+        <button class="tag-chip" data-tag="History">History</button>
+        <button class="tag-chip" data-tag="Systems">Systems</button>
+        <button class="tag-chip" data-tag="Nature">Nature</button>
+        <button class="tag-chip" data-tag="Psychology">Psychology</button>
+        <button class="tag-chip" data-tag="Other">Other</button>
+      </div>
+      <div id="vault-list"></div>
+    </div>
+
+    <div class="screen" id="screen-archive">
+      <div id="archive-list-view">
+        <div class="screen-title" style="margin-bottom:4px;">Archive</div>
+        <div class="screen-sub" style="margin-bottom:20px;">Past transmissions from Umbra Locke</div>
+        <div class="divider"><div class="divider-line"></div><div class="divider-gem"></div><div class="divider-line"></div></div>
+        <div id="archive-list" style="margin-top:20px;"></div>
+      </div>
+      <div id="archive-detail-view" class="archive-detail">
+        <button class="back-btn" id="archive-back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+          Back to Archive
+        </button>
+        <div id="archive-detail-content"></div>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-intro">
+      <div class="screen-title" style="margin-bottom:4px;">Channel Intro</div>
+      <div class="screen-sub" style="margin-bottom:20px;">The voice of Umbra Locke</div>
+      <div class="divider"><div class="divider-line"></div><div class="divider-gem"></div><div class="divider-line"></div></div>
+
+      <div style="margin-top:20px;">
+        <div class="intro-section">
+          <div class="intro-section-title">◈ Cold Open — Black Screen</div>
+          <div class="intro-beat">[Silence. A single breath.]</div>
+          <div class="intro-line">There is a world beneath the one you think you know.</div>
+          <div class="intro-beat">[beat]</div>
+          <div class="intro-line">Not hidden underground. Not locked behind closed doors. Not buried in classified files or whispered in secret rooms.</div>
+          <div class="intro-beat">[beat]</div>
+          <div class="intro-line">It's right in front of you.</div>
+          <div class="intro-line">It has always been right in front of you.</div>
+        </div>
+
+        <div class="intro-section">
+          <div class="intro-section-title">◈ The Figure Appears</div>
+          <div class="intro-beat">[Slow fade in: the suit. No face. The halo.]</div>
+          <div class="intro-line">The island off the coast of a city of eight million people — where over a million of them were buried, quietly, without a single headstone.</div>
+          <div class="intro-line" style="margin-top:10px;">The building in your city with floors that don't exist on any elevator panel.</div>
+          <div class="intro-line" style="margin-top:10px;">The law that lets the government take everything you own — without charging you with a crime.</div>
+          <div class="intro-beat">[beat]</div>
+          <div class="intro-line">None of it is a secret.</div>
+          <div class="intro-line">All of it is simply... <em style="color:var(--gold);">unasked.</em></div>
+        </div>
+
+        <div class="intro-section">
+          <div class="intro-section-title">◈ The Declaration</div>
+          <div class="intro-beat">[The halo brightens.]</div>
+          <div class="intro-line">My name is Umbra Locke.</div>
+          <div class="intro-line" style="margin-top:6px;">And this is Echo Black.</div>
+          <div class="intro-beat">[beat]</div>
+          <div class="intro-line">We are not here to frighten you.</div>
+          <div class="intro-line">We are not here to convince you of anything.</div>
+          <div class="intro-beat">[pause]</div>
+          <div class="intro-line">We are here because curiosity is the rarest form of courage.</div>
+          <div class="intro-line" style="margin-top:10px;">And because once you see something —</div>
+          <div class="intro-beat">[beat]</div>
+          <div class="intro-line">— you cannot unsee it.</div>
+          <div class="intro-beat">[Title card: ECHO BLACK burns in. Gold on void.]</div>
+          <div class="intro-line" style="margin-top:14px; font-size:20px; text-align:center; letter-spacing:0.1em; font-family:'Cinzel',serif; color:var(--gold-bright); animation: glow-pulse 4s infinite;">Begin.</div>
+        </div>
+
+        <div class="intro-section">
+          <div class="intro-section-title">◈ Short Version — Reels / Shorts</div>
+          <div class="intro-beat">[Black screen]</div>
+          <div class="intro-line">It's not hidden.</div>
+          <div class="intro-line">It never was.</div>
+          <div class="intro-line">You just never thought to look.</div>
+          <div class="intro-beat">[TITLE: ECHO BLACK]</div>
+        </div>
+
+        <div class="intro-section">
+          <div class="intro-section-title">◈ Delivery Notes</div>
+          <div class="intro-note">• <strong style="color:var(--text-secondary);">Pace:</strong> Slower than feels comfortable. The pauses are load-bearing.</div>
+          <div class="intro-note">• <strong style="color:var(--text-secondary);">Tone:</strong> Not ominous. Certain. Umbra Locke knows, and is choosing to share.</div>
+          <div class="intro-note">• <strong style="color:var(--text-secondary);">The figure:</strong> Perfectly still until the title card. Stillness is authority.</div>
+          <div class="intro-note">• <strong style="color:var(--text-secondary);">Sound:</strong> No music until title card. Consider a 40Hz tone — felt more than heard.</div>
+          <div class="intro-note">• <strong style="color:var(--text-secondary);">The halo:</strong> Sacred, not supernatural. Like ordination, not horror.</div>
+        </div>
+
+        <div class="intro-section">
+          <div class="intro-section-title">◈ Tagline Options</div>
+          <div class="tagline-item">"Things hidden in plain sight."</div>
+          <div class="tagline-item">"You've walked past it your whole life."</div>
+          <div class="tagline-item">"The world has a second layer. We go there."</div>
+          <div class="tagline-item">"Curiosity is the rarest form of courage."</div>
+          <div class="tagline-item">"Once you see it — you cannot unsee it."</div>
+        </div>
+
+        <button class="btn-ghost" id="copy-intro-btn" style="width:100%; margin-top:8px;">◈ &nbsp; Copy Full Script</button>
+      </div>
+    </div>
+  </div>
+
+  <nav id="nav">
+    <button class="nav-btn active" data-screen="generate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Generate
+    </button>
+    <button class="nav-btn" data-screen="vault">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Vault
+    </button>
+    <button class="nav-btn" data-screen="archive">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      Archive
+    </button>
+    <button class="nav-btn" data-screen="intro">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M10 9l5 3-5 3V9z"/></svg>
+      Intro
+    </button>
+  </nav>
+</div>
+
+<script>
+const SECTIONS = ["HOOK","REVEAL","WEIGHT","INVITATION"];
+const SECTION_META = {
+  HOOK:       { label:"I — The Hook",       color:"#e8c85a" },
+  REVEAL:     { label:"II — The Reveal",    color:"#c9a84c" },
+  WEIGHT:     { label:"III — The Weight",   color:"#a08a3a" },
+  INVITATION: { label:"IV — The Invitation",color:"#8a7030" },
+};
+
+let vault = JSON.parse(localStorage.getItem('eb_vault') || '[]');
+let archive = JSON.parse(localStorage.getItem('eb_archive') || '[]');
+let activeTag = 'all';
+let currentScreen = 'generate';
+
+function saveVault() { localStorage.setItem('eb_vault', JSON.stringify(vault)); }
+function saveArchive() { localStorage.setItem('eb_archive', JSON.stringify(archive)); }
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (ch) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
+function paragraphsToHtml(text) {
+  return String(text || '')
+    .split(/\n\s*\n/)
+    .map(p => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchScreen(btn.dataset.screen));
+});
+
+function switchScreen(screen) {
+  currentScreen = screen;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  document.querySelector(`[data-screen="${screen}"]`).classList.add('active');
+  if (screen === 'vault') renderVault();
+  if (screen === 'archive') renderArchive();
+}
+
+function parseEpisode(text) {
+  const result = {};
+  SECTIONS.forEach((section, i) => {
+    const tag = `[${section}]`;
+    const nextTag = SECTIONS[i + 1] ? `[${SECTIONS[i + 1]}]` : null;
+    const start = text.indexOf(tag);
+    if (start === -1) return;
+    const contentStart = start + tag.length;
+    const end = nextTag ? text.indexOf(nextTag) : text.length;
+    result[section] = text.slice(contentStart, end !== -1 ? end : undefined).trim();
+  });
+  return result;
+}
+
+function normalizeEpisode(ep) {
+  const trimmed = {};
+  SECTIONS.forEach(section => { trimmed[section] = (ep?.[section] || '').trim(); });
+  return trimmed;
+}
+
+function renderEpisode(topic, ep) {
+  let html = `<div class="ep-header">
+    <div class="corner-bl"></div><div class="corner-br"></div>
+    <div class="ep-header-label">Echo Black — Transmission</div>
+    <div class="ep-header-topic">${escapeHtml(topic)}</div>
+  </div>`;
+
+  SECTIONS.forEach((section, i) => {
+    if (!ep[section]) return;
+    const meta = SECTION_META[section];
+    const bodyClass = section === 'HOOK' ? 'hook-body' : section === 'INVITATION' ? 'invite-body' : '';
+    html += `
+      <div class="section-block" style="animation-delay:${i * 0.1}s">
+        <div class="section-label">
+          <span class="section-label-text" style="color:${meta.color}">${meta.label}</span>
+          <div class="section-label-line" style="background:linear-gradient(90deg,${meta.color}44,transparent)"></div>
+        </div>
+        <div class="section-body ${bodyClass}">${paragraphsToHtml(ep[section])}</div>
+      </div>
+      ${i < SECTIONS.length - 1 ? '<div class="divider"><div class="divider-line"></div><div class="divider-gem"></div><div class="divider-line"></div></div>' : ''}
+    `;
+  });
+
+  html += `<div style="text-align:center; margin-top:24px; padding-bottom:8px;">
+    <button class="btn-ghost" id="copy-ep-btn">◈ &nbsp; Copy Transmission</button>
+    <div style="margin-top:10px;">
+      <button class="btn-ghost" id="send-to-vault-btn" style="font-size:7px; padding:8px 16px;">+ Add Topic to Vault</button>
+    </div>
+  </div>`;
+
+  return html;
+}
+
+const genInput = document.getElementById('gen-input');
+const genBtn = document.getElementById('gen-btn');
+const genLoading = document.getElementById('gen-loading');
+const genError = document.getElementById('gen-error');
+const genOutput = document.getElementById('gen-output');
+
+function setGenerateError(message) {
+  genError.querySelector('p').textContent = message;
+  genError.style.display = 'block';
+}
+
+function episodeToClipboardText(ep) {
+  return SECTIONS.map(s => ep[s] ? `${SECTION_META[s].label.toUpperCase()}\n\n${ep[s]}` : '')
+    .filter(Boolean)
+    .join('\n\n—\n\n');
+}
+
+function bindEpisodeButtons(topic, ep) {
+  document.getElementById('copy-ep-btn')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(episodeToClipboardText(ep));
+      const btn = document.getElementById('copy-ep-btn');
+      btn.textContent = '◈  Copied!';
+      setTimeout(() => { const b = document.getElementById('copy-ep-btn'); if (b) b.textContent = '◈  Copy Transmission'; }, 2000);
+    } catch {}
+  });
+
+  document.getElementById('send-to-vault-btn')?.addEventListener('click', () => {
+    addToVault(topic, 'Other');
+    const btn = document.getElementById('send-to-vault-btn');
+    btn.textContent = '✓  Added to Vault';
+  });
+}
+
+async function generate(topic) {
+  const cleanedTopic = topic.trim();
+  if (!cleanedTopic) return;
+
+  genLoading.style.display = 'block';
+  genError.style.display = 'none';
+  genOutput.style.display = 'none';
+  genBtn.disabled = true;
+
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: cleanedTopic })
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(payload.error || `Request failed with status ${response.status}`);
+    }
+
+    const ep = normalizeEpisode(payload.episode || parseEpisode(payload.text || ''));
+    if (!SECTIONS.some(section => ep[section])) {
+      throw new Error('The response came back, but it was not in the expected Echo Black format.');
+    }
+
+    const saved = {
+      topic: cleanedTopic,
+      episode: ep,
+      date: new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }),
+      id: Date.now()
+    };
+    archive = [saved, ...archive.slice(0, 49)];
+    saveArchive();
+
+    genLoading.style.display = 'none';
+    genOutput.innerHTML = renderEpisode(cleanedTopic, ep);
+    genOutput.style.display = 'block';
+    bindEpisodeButtons(cleanedTopic, ep);
+
+  } catch (error) {
+    genLoading.style.display = 'none';
+    setGenerateError(error.message || 'The signal was interrupted. Try again.');
+  } finally {
+    genBtn.disabled = false;
+  }
+}
+
+genBtn.addEventListener('click', () => generate(genInput.value));
+genInput.addEventListener('keydown', e => { if (e.key === 'Enter') generate(genInput.value); });
+
+document.getElementById('vault-pick-btn').addEventListener('click', () => {
+  if (vault.length === 0) { switchScreen('vault'); return; }
+  const pick = vault[Math.floor(Math.random() * vault.length)];
+  genInput.value = pick.topic;
+  generate(pick.topic);
+});
+
+function addToVault(topic, tag = 'Other') {
+  const cleaned = topic.trim();
+  if (!cleaned) return;
+  if (vault.find(v => v.topic.toLowerCase() === cleaned.toLowerCase())) return;
+  vault.unshift({ topic: cleaned, tag, id: Date.now() });
+  saveVault();
+  renderVault();
+}
+
+function renderVault() {
+  const list = document.getElementById('vault-list');
+  const filtered = activeTag === 'all' ? vault : vault.filter(v => v.tag === activeTag);
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><p>${vault.length === 0 ? 'No subjects yet.<br/>Add something hidden<br/>in plain sight.' : 'No subjects in this category.'}</p></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(item => `
+    <div class="vault-item" data-id="${item.id}">
+      <span class="vault-item-gem">⬧</span>
+      <div class="vault-item-body">
+        <div class="vault-item-topic">${escapeHtml(item.topic)}</div>
+        <div class="vault-item-tag">${escapeHtml(item.tag)}</div>
+      </div>
+      <button class="vault-item-del" data-del="${item.id}">×</button>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.vault-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.dataset.del) return;
+      const item = vault.find(v => String(v.id) === String(el.dataset.id));
+      if (item) {
+        genInput.value = item.topic;
+        switchScreen('generate');
+        generate(item.topic);
+      }
+    });
+  });
+
+  list.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      vault = vault.filter(v => String(v.id) !== String(btn.dataset.del));
+      saveVault();
+      renderVault();
+    });
+  });
+}
+
+document.getElementById('vault-add-btn').addEventListener('click', () => {
+  const input = document.getElementById('vault-input');
+  const val = input.value.trim();
+  if (!val) return;
+
+  const cats = {
+    Places: ['island','city','town','building','bridge','street','park','mountain','forest','lake','ocean','country','state'],
+    History: ['war','massacre','incident','event','revolution','discovery','century','era','dynasty','empire'],
+    Systems: ['law','government','corporation','bank','prison','military','police','agency','policy','system'],
+    Nature: ['animal','plant','fungus','ocean','weather','disease','organism','species','ecosystem'],
+    Psychology: ['brain','behavior','perception','bias','experiment','study','effect','syndrome'],
+  };
+
+  let tag = 'Other';
+  const lower = val.toLowerCase();
+  for (const [cat, words] of Object.entries(cats)) {
+    if (words.some(w => lower.includes(w))) { tag = cat; break; }
+  }
+
+  addToVault(val, tag);
+  input.value = '';
+});
+
+document.getElementById('vault-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('vault-add-btn').click();
+});
+
+document.getElementById('tag-filters').addEventListener('click', e => {
+  if (!e.target.dataset.tag) return;
+  activeTag = e.target.dataset.tag;
+  document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+  e.target.classList.add('active');
+  renderVault();
+});
+
+function renderArchive() {
+  const listView = document.getElementById('archive-list-view');
+  const detailView = document.getElementById('archive-detail-view');
+  listView.style.display = 'block';
+  detailView.classList.remove('open');
+
+  const list = document.getElementById('archive-list');
+  if (archive.length === 0) {
+    list.innerHTML = `<div class="empty-state"><p>No transmissions yet.<br/>Generate an episode<br/>to begin the archive.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = archive.map(item => {
+    const preview = item.episode?.HOOK ? `${escapeHtml(item.episode.HOOK.substring(0, 120))}...` : '';
+    return `
+      <div class="archive-item" data-id="${item.id}">
+        <div class="archive-item-topic">${escapeHtml(item.topic)}</div>
+        <div class="archive-item-meta">${escapeHtml(item.date)}</div>
+        <div class="archive-item-preview">${preview}</div>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.archive-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const item = archive.find(a => String(a.id) === String(el.dataset.id));
+      if (!item) return;
+      listView.style.display = 'none';
+      document.getElementById('archive-detail-content').innerHTML = renderEpisode(item.topic, item.episode);
+      detailView.classList.add('open');
+      bindEpisodeButtons(item.topic, item.episode);
+    });
+  });
+}
+
+document.getElementById('archive-back').addEventListener('click', () => renderArchive());
+
+document.getElementById('copy-intro-btn').addEventListener('click', async () => {
+  const script = `ECHO BLACK — CHANNEL INTRO
+Narrated by Umbra Locke
+
+— COLD OPEN —
+
+[Silence. A single breath.]
+
+There is a world beneath the one you think you know.
+
+[beat]
+
+Not hidden underground. Not locked behind closed doors. Not buried in classified files or whispered in secret rooms.
+
+[beat]
+
+It's right in front of you.
+It has always been right in front of you.
+
+— THE FIGURE APPEARS —
+
+[Slow fade in: the suit. No face. The halo.]
+
+The island off the coast of a city of eight million people — where over a million of them were buried, quietly, without a single headstone.
+
+The building in your city with floors that don't exist on any elevator panel.
+
+The law that lets the government take everything you own — without charging you with a crime.
+
+[beat]
+
+None of it is a secret.
+All of it is simply... unasked.
+
+— THE DECLARATION —
+
+[The halo brightens.]
+
+My name is Umbra Locke.
+And this is Echo Black.
+
+[beat]
+
+We are not here to frighten you.
+We are not here to convince you of anything.
+
+[pause]
+
+We are here because curiosity is the rarest form of courage.
+
+And because once you see something —
+
+[beat]
+
+— you cannot unsee it.
+
+[Title card: ECHO BLACK]
+
+Begin.
+
+—
+
+SHORT VERSION (Reels/Shorts):
+
+It's not hidden.
+It never was.
+You just never thought to look.
+
+[TITLE: ECHO BLACK]
+
+—
+
+TAGLINES:
+• "Things hidden in plain sight."
+• "You've walked past it your whole life."
+• "The world has a second layer. We go there."
+• "Curiosity is the rarest form of courage."
+• "Once you see it — you cannot unsee it."`;
+
+  try {
+    await navigator.clipboard.writeText(script);
+    const btn = document.getElementById('copy-intro-btn');
+    btn.textContent = '◈  Copied!';
+    setTimeout(() => btn.textContent = '◈  Copy Full Script', 2000);
+  } catch {}
+});
+
+renderVault();
+renderArchive();
+</script>
+</body>
+</html>
