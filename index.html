@@ -120,6 +120,7 @@ input, select, textarea {
     <div class="copy-row">
       <button class="btn-gold" id="generateBtn">Generate Pack</button>
       <button class="btn-ghost" id="copyAllBtn" disabled>Copy All</button>
+      <button class="btn-ghost" id="savePackBtn" disabled>Save Pack</button>
       <button class="btn-ghost" id="downloadBtn" disabled>Download Text</button>
     </div>
     <div class="status" id="status"></div>
@@ -127,6 +128,9 @@ input, select, textarea {
   </div>
 
   <div class="result" id="result"></div>
+  <div class="card" style="margin-top:22px;">
+  <div class="label">Saved Packs</div>
+  <div id="savedPacks"></div>
 </div>
 
 <script>
@@ -277,6 +281,126 @@ downloadBtn.addEventListener('click', () => {
   a.remove();
   URL.revokeObjectURL(url);
 });
+const savePackBtn = document.getElementById('savePackBtn');
+const savedPacksEl = document.getElementById('savedPacks');
+
+let currentPackData = null;
+
+function loadSavedPacks() {
+  const saved = JSON.parse(localStorage.getItem('echo_black_saved_packs') || '[]');
+
+  if (!saved.length) {
+    savedPacksEl.innerHTML = `
+      <div style="color:var(--text-dim); font-style:italic; padding:8px 0;">
+        No saved packs yet.
+      </div>
+    `;
+    return;
+  }
+
+  savedPacksEl.innerHTML = saved.map((pack, index) => `
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+        <div>
+          <div style="font-family:'Cinzel', serif; color:var(--gold-bright); font-size:13px; letter-spacing:.12em; text-transform:uppercase;">
+            ${pack.topic}
+          </div>
+
+          <div style="margin-top:6px; color:var(--text-dim); font-size:12px;">
+            ${pack.mode.replace('_', ' ')} â¢ ${pack.date}
+          </div>
+        </div>
+
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn-ghost" onclick="openPack(${index})">Open</button>
+          <button class="btn-ghost" onclick="copyPack(${index})">Copy</button>
+          <button class="btn-ghost" onclick="deletePack(${index})">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function saveCurrentPack() {
+  if (!currentPackData) return;
+
+  const saved = JSON.parse(localStorage.getItem('echo_black_saved_packs') || '[]');
+
+  saved.unshift({
+    ...currentPackData,
+    date: new Date().toLocaleString()
+  });
+
+  localStorage.setItem('echo_black_saved_packs', JSON.stringify(saved.slice(0, 50)));
+
+  loadSavedPacks();
+
+  savePackBtn.textContent = 'Saved';
+  setTimeout(() => {
+    savePackBtn.textContent = 'Save Pack';
+  }, 1500);
+}
+
+function openPack(index) {
+  const saved = JSON.parse(localStorage.getItem('echo_black_saved_packs') || '[]');
+  const pack = saved[index];
+  if (!pack) return;
+
+  renderPayload({ payload: pack.payload });
+  resultEl.style.display = 'block';
+
+  lastText = pack.text;
+  currentPackData = pack;
+
+  copyAllBtn.disabled = false;
+  downloadBtn.disabled = false;
+  savePackBtn.disabled = false;
+
+  window.scrollTo({
+    top: resultEl.offsetTop - 20,
+    behavior: 'smooth'
+  });
+}
+
+async function copyPack(index) {
+  const saved = JSON.parse(localStorage.getItem('echo_black_saved_packs') || '[]');
+  const pack = saved[index];
+  if (!pack) return;
+
+  try {
+    await navigator.clipboard.writeText(pack.text);
+  } catch {}
+}
+
+function deletePack(index) {
+  const saved = JSON.parse(localStorage.getItem('echo_black_saved_packs') || '[]');
+
+  saved.splice(index, 1);
+
+  localStorage.setItem('echo_black_saved_packs', JSON.stringify(saved));
+
+  loadSavedPacks();
+}
+
+savePackBtn?.addEventListener('click', saveCurrentPack);
+
+const originalRenderPayload = renderPayload;
+
+renderPayload = function(data) {
+  originalRenderPayload(data);
+
+  currentPackData = {
+    topic: topicEl.value.trim(),
+    mode: selectedMode,
+    payload: data.payload,
+    text: payloadToText(data)
+  };
+
+  savePackBtn.disabled = false;
+};
+
+loadSavedPacks();
+
 </script>
 </body>
 </html>
