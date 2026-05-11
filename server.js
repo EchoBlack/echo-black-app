@@ -32,6 +32,10 @@ const MODE_PROMPTS = {
   "full_script": "",
   "shorts_script": "",
   "thumbnail_text": ["", "", ""],
+  "graphics_prompts": ["", "", "", "", ""],
+"broll_ideas": ["", "", "", "", ""],
+"shot_list": ["", "", "", "", ""],
+"research_checklist": ["", "", "", "", ""],
   "description": "",
   "tags": ["", "", "", "", "", "", "", "", "", ""]
 }
@@ -42,6 +46,10 @@ Rules:
 - full_script: 500-900 words
 - shorts_script: 90-160 words
 - thumbnail_text: 3 thumbnail text ideas
+- graphics_prompts: 5 cinematic image prompts
+- broll_ideas: 5 practical B-roll ideas
+- shot_list: 5 timestamped edit beats
+- research_checklist: 5 things to verify or research
 - description: 1 YouTube description
 - tags: 10 concise keyword tags
 - No markdown
