@@ -179,6 +179,10 @@ function renderPayload(data) {
   html += sectionHtml('Full Script', p.full_script);
   html += sectionHtml('Shorts Script', p.shorts_script);
   html += sectionHtml('Thumbnail Text', p.thumbnail_text, true);
+  html += sectionHtml('Graphics Prompts', p.graphics_prompts, true);
+html += sectionHtml('B-roll Ideas', p.broll_ideas, true);
+html += sectionHtml('Shot List', p.shot_list, true);
+html += sectionHtml('Research Checklist', p.research_checklist, true);
   html += sectionHtml('Description', p.description);
   html += sectionHtml('Tags', p.tags, true);
   html += sectionHtml('Short Angles', p.short_angles, true);
