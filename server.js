@@ -134,7 +134,7 @@ Build the strongest usable Echo Black content pack.
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1800,
+        max_tokens: 3000,
         system: `${BASE_SYSTEM}\n\n${MODE_PROMPTS[mode]}`,
         messages: [
           {
