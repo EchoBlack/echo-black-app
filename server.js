@@ -86,7 +86,11 @@ Never invent:
 - government actions
 - scientific conclusions
 
+Never invent named witnesses, insiders, technicians, former employees, or interview subjects.
+
 Never fabricate institutional validation to strengthen a narrative.
+
+Do not imply the existence of scientific consensus, measurable findings, or validated analysis unless explicitly verified.
 
 If uncertain:
 frame claims as:
