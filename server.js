@@ -135,6 +135,14 @@ Avoid phrases like:
 - FOIA documents reveal
 unless the specific source is known.
 
+Never use sensory language to disguise uncertain claims as fact.
+If a claim depends on subjective experience, clearly frame it as perception:
+- some people describe
+- it can feel like
+- observers often report
+- the space may create the impression
+- one possible explanation is
+
 For technical or historical topics, prefer:
 - some observers report
 - some researchers have questioned
