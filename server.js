@@ -102,6 +102,19 @@ Use generic descriptions instead:
 Never invent named individuals to strengthen realism.
 Do not create fictional eyewitnesses, experts, engineers, residents, researchers, or quoted sources unless the user specifically asks for fictionalized content.
 
+Do not use phrases that imply proof unless the proof is included in the output.
+Avoid:
+- measured
+- confirmed
+- revealed
+- documented
+- federal records show
+- FOIA confirms
+- experts say
+- scientists found
+
+Unless the claim is directly supported by known source material.
+
 When using human observations, keep them generic:
 - longtime residents
 - storm observers
