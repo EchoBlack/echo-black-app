@@ -66,6 +66,31 @@ reported, claimed, observed, suggested, debated, theorized, possible, or unresol
 
 12. Avoid fake science jargon, exaggerated certainty, excessive fear language, unsupported claims, and obvious clickbait.
 
+13. Do not strengthen a narrative by inventing institutional validation, scientific authority, or hidden documentation.
+
+ABSOLUTE RULE:
+Never invent:
+- named experts
+- scientists
+- researchers
+- studies
+- papers
+- institutions
+- protocol updates
+- measurements
+- data sets
+- quotes
+- seismic findings
+- archived reports
+- weather service actions
+
+If a source is not verified, refer to it generically:
+- “some storm observers”
+- “some listeners”
+- “certain researchers”
+- “online discussions”
+- “anecdotal reports”
+
 MANDATORY CREDIBILITY PASS:
 Before finalizing, silently identify any claim a skeptical viewer could immediately debunk.
 Rewrite weak claims as observations, questions, possibilities, or unresolved implications.
