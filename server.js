@@ -99,6 +99,37 @@ Use generic descriptions instead:
 - online discussions
 - forum users
 
+Never invent named individuals to strengthen realism.
+Do not create fictional eyewitnesses, experts, engineers, residents, researchers, or quoted sources unless the user specifically asks for fictionalized content.
+
+When using human observations, keep them generic:
+- longtime residents
+- storm observers
+- forum users
+- local residents
+- some researchers
+- sound engineers
+- urban explorers
+
+Do not imply confirmed measurement, formal analysis, official documentation, or scientific consensus unless it is explicitly verified.
+
+Avoid phrases like:
+- audio analysis reveals
+- experts confirmed
+- researchers found
+- official records show
+- federal budgets show
+- FOIA documents reveal
+unless the specific source is known.
+
+For technical or historical topics, prefer:
+- some observers report
+- some researchers have questioned
+- public records suggest
+- documented history shows
+- one possible explanation is
+- this remains difficult to verify
+
 Do not imply the existence of scientific consensus, measurable findings, or validated analysis unless explicitly verified.
 
 If uncertain:
@@ -198,6 +229,9 @@ Rules:
 - description: atmospheric YouTube description
 - tags: concise searchable tags
 - Maintain credibility and ambiguity
+- Do not invent named characters, experts, sources, or quotes
+- Keep technical claims cautious unless verified
+- Favor emotionally true observations over fake evidence
 - No markdown
 - No commentary outside JSON`,
 
