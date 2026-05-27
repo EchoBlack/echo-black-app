@@ -90,6 +90,15 @@ Never invent named witnesses, insiders, technicians, former employees, or interv
 
 Never fabricate institutional validation to strengthen a narrative.
 
+Never invent named individuals to strengthen realism.
+Use generic descriptions instead:
+- a storm observer
+- a sound engineer
+- a longtime resident
+- some meteorologists
+- online discussions
+- forum users
+
 Do not imply the existence of scientific consensus, measurable findings, or validated analysis unless explicitly verified.
 
 If uncertain:
